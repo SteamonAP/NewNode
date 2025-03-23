@@ -8,7 +8,7 @@ const app = express();
 const adminRoutes = require("./routes/admin.js");
 const shopRoutes = require("./routes/shop.js");
 const errorContollers = require("./controllers/error.js");
-const db = require("./utils/db.js");
+const sequelize = require("./utils/db.js");
 
 app.set("view engine", "ejs");
 app.set("views", "views");
@@ -25,6 +25,17 @@ app.use(shopRoutes);
 
 app.use(errorContollers.get404);
 
-app.listen(PORT, () => {
-  console.log(`The server's running on ${PORT}`);
-});
+
+
+sequelize
+  .sync()
+  .then(result =>{
+    app.listen(PORT, () => {
+      console.log(`The server's running on ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.log(err);
+  });
+
+

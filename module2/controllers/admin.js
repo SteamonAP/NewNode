@@ -11,15 +11,18 @@ exports.getAddProduct = (req, res, next) => {
 exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
   const imageUrl = req.body.imageUrl;
-  const price = parseFloat(req.body.price); // Fix 1: Ensure price is a float
+  const price = parseFloat(req.body.price);
   const description = req.body.description;
-
-  const product = new Product(null, title, imageUrl, description, price); // Fix 2: Pass correct order
-  product.save()
-    .then(() => {
-      res.redirect("/");
-    })
-    .catch(err => console.log(err));
+  Product.create({
+    title: title,
+    imageUrl: imageUrl,
+    price: price,    //findById() (which we'll use in this course) was replaced by findByPk()
+    description: description
+  }).then(result => {
+    console.log("Product Created");
+  }).catch(err => {
+    console.log(err);
+  });
 };
 
 exports.getEditProduct = (req, res, next) => {
