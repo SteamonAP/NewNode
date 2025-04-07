@@ -1,28 +1,32 @@
-const dotenv = require("dotenv");
-const { Sequelize } = require('sequelize');
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
+
+let _db;
+
+const dotenv = require('dotenv');
 
 dotenv.config();
 
-const sequelize = new Sequelize(process.env.database,process.env.user, process.env.password,
-    {dialect: 'mysql',
-    host : process.env.host
-});
+const mongoConnect = (callback) => {
+    MongoClient.connect(process.env.MONGODB_URI)
+        .then(client => {
+            console.log('Connected to MongoDB');
+            _db = client.db()
+            callback();
+        })
+        .catch(err =>{
+            console.log(err);
+            throw err;
+        });
+};
 
-// sequelize.getConnection((err,connection) =>{
-//     if(err) {
-//         console.log("unable to connect to MySQL",err);
-//     } else{
-//         console.log("Connected to MySQL");
-//         connection.release();
-//     }
-// });
+const getDb = () =>{
+    if(_db){
+        return _db;
+    }
+    throw new Error('No database found');
+}
 
-sequelize.authenticate()
-    .then(() =>{
-        console.log("Connected to MySQL db");
-    })
-    .catch(err =>{
-        console.log("unable to connect to MySQL",err);
-    })
+exports.mongoConnect = mongoConnect;
+exports.getDb = getDb;
 
-module.exports = sequelize;
