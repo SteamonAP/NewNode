@@ -1,32 +1,15 @@
-const mongodb = require('mongodb');
-const MongoClient = mongodb.MongoClient;
-
-let _db;
-
+const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-
 dotenv.config();
 
-const mongoConnect = (callback) => {
-    MongoClient.connect(process.env.MONGODB_URI)
-        .then(client => {
-            console.log('Connected to MongoDB');
-            _db = client.db()
-            callback();
-        })
-        .catch(err =>{
-            console.log(err);
-            throw err;
-        });
+const connectDB = async() => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGODB_URI);
+        console.log(`Database connected : ${conn.connection.host}`);
+    } catch (error) {
+        console.log("Database connection error : " ,error);
+        
+    }
 };
 
-const getDb = () =>{
-    if(_db){
-        return _db;
-    }
-    throw new Error('No database found');
-}
-
-exports.mongoConnect = mongoConnect;
-exports.getDb = getDb;
-
+module.exports = connectDB;

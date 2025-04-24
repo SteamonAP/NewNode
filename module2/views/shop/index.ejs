@@ -22,8 +22,10 @@
                             <h2 class="product__price">₹<%= product.price %></h2>
                         </div>
                         <div class="card__actions">
-                             <!-- <a href="/products/<%= product._id %>" class="btn">Details</a> -->
-                            <%- include('../includes/add-to-cart.ejs',{product:product}) %>
+                             <a href="/products/<%= product._id %>" class="btn">Details</a>
+                             <% if(isAuthenticated) { %>
+                                <%- include('../includes/add-to-cart.ejs',{product:product}) %>
+                            <% } %>   
                         </div>
                     </article>
                 <% } %>
