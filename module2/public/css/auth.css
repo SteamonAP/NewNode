@@ -4,4 +4,27 @@
     margin: auto;
     display: block;
 }
+
+.centered {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.reset-btn {
+    background-color: transparent;
+    color: #6a1b9a;
+    border: 2px solid #6a1b9a;
+    padding: 0.4rem 1.2rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.reset-btn:hover,
+.reset-btn:focus {
+    background-color: #6a1b9a;
+    color: white;
+}
+
   

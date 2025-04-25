@@ -205,3 +205,84 @@ exports.postReset = (req, res, next) => {
       });
   });
 };
+
+exports.getNewPassword = (req, res, next) => {
+  const token = req.params.token;
+  User.findOne({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } })
+    .then((user) => {
+      let message = req.flash("error");
+      if (message.length > 0) {
+        message = message[0];
+      } else {
+        message = null;
+      }
+      res.render("auth/new-password", {
+        path: "/new-password",
+        pageTitle: "New Password",
+        errorMessage: message,
+        userId: user._id.toString(),
+        passwordToken: token,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+exports.postNewPassword = (req, res, next) => {
+  const newPassword = req.body.password;
+  const userId = req.body.userId;
+  const passwordToken = req.body.passwordToken;
+  let resetUser;
+
+  User.findOne({
+    resetToken: passwordToken,
+    resetTokenExpiration: { $gt: Date.now() },
+    _id: userId,
+  })
+    .then((user) => {
+      resetUser = user;
+      return bcrypt.hash(newPassword, 10);
+    })
+    .then((hashedPassword) => {
+      resetUser.password = hashedPassword;
+      resetUser.resetToken = undefined;
+      resetUser.resetTokenExpiration = undefined;
+      return resetUser.save();
+    })
+    .then((result) => {
+      res.redirect("/login");
+      transporter.sendMail({
+        to: resetUser.email,
+        from: "amoghpitale7@gmail.com",
+        subject: "✅ Your Password Was Successfully Reset",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #4CAF50; text-align: center;">🔒 Password Reset Successful</h2>
+            <p style="font-size: 16px; color: #333;">
+              Hello ${resetUser.email.split("@")[0]},
+            </p>
+            <p style="font-size: 16px; color: #333;">
+              Your password has been successfully updated. You can now log in using your new password.
+            </p>
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 6px; margin-top: 20px;">
+              <p style="font-size: 16px; color: #555;">
+                If you did not request this change, please <a href="mailto:amoghpitale7@gmail.com" style="color: #e53935;">contact us immediately</a>.
+              </p>
+            </div>
+            <p style="text-align: center; margin-top: 30px;">
+              <a href="http://localhost:3000/login" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                Go to Login
+              </a>
+            </p>
+            <p style="font-size: 14px; color: #999; text-align: center; margin-top: 40px;">
+              © 2025 Our Shop. All rights reserved.
+            </p>
+          </div>
+        `,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
