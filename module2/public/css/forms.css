@@ -26,6 +26,8 @@
     box-shadow: 0 0 4px rgba(0, 105, 92, 0.5);
 }
 
+
+
 .btn {
     display: inline-block;
     padding: 0.5rem 1.5rem;
@@ -45,6 +47,10 @@
 
 .btn:active {
     background-color: #00332a;
+}
+.form-control input.invalid,
+.form-control textarea.invalid {
+    border-color: red;
 }
 
 @media (max-width: 600px) {

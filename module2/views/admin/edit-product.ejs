@@ -7,7 +7,10 @@
    <%- include('../includes/navigation.ejs') %>
 
     <main>
-        <form class="product-form" action="/admin/<% if(editing) { %>edit-product<% } else { %>add-product<% } %>" method="POST">
+        <% if(errorMessage) { %>
+            <div class="user-message user-message--error"><%= errorMessage %></div>
+        <% } %>
+        <form class="product-form" action="/admin/<% if(editing) { %>edit-product<% } else { %>add-product<% } %>" method="POST" novalidate>
             <!-- Hidden field for product ID (if editing) -->
             <% if (editing) { %>
                 <input type="hidden" name="id" value="<%= product.id %>">
@@ -16,50 +19,54 @@
             <!-- Title Field -->
             <div class="form-control">
                 <label for="title">Title</label>
-                <input 
+                <input
+                    class="<%= validationErrors.find(e => e.param === 'title') ? 'invalid' : '' %>"
                     type="text" 
                     name="title" 
                     id="title" 
                     placeholder="Enter product title"
-                    value="<%= editing ? product.title : '' %>" 
+                    value="<%= (editing || hasError) ? product.title : '' %>" 
                     required>
             </div>
 
             <!-- Image URL Field -->
             <div class="form-control">
                 <label for="imageUrl">Image URL</label>
-                <input 
+                <input
+                    class="<%= validationErrors.find(e => e.param === 'imageUrl') ? 'invalid' : '' %>"
                     type="url" 
                     name="imageUrl" 
                     id="imageUrl" 
                     placeholder="https://example.com/image.jpg"
-                    value="<%= editing ? product.imageUrl : '' %>" 
+                    value="<%= (editing || hasError) ? product.imageUrl : '' %>" 
                     required>
             </div>
 
             <!-- Price Field -->
             <div class="form-control">
                 <label for="price">Price</label>
-                <input 
+                <input
+                    class="<%= validationErrors.find(e => e.param === 'price') ? 'invalid' : '' %>" 
                     type="number" 
                     name="price" 
                     id="price" 
                     step="0.01" 
                     min="0" 
                     placeholder="Enter product price"
-                    value="<%= editing ? product.price : '' %>" 
+                    value="<%= (editing || hasError) ? product.price : '' %>" 
                     required>
             </div>
 
             <!-- Description Field -->
             <div class="form-control">
                 <label for="description">Description</label>
-                <textarea 
+                <textarea
+                    class="<%= validationErrors.find(e => e.param === 'description') ? 'invalid' : '' %>"
                     name="description" 
                     id="description" 
                     rows="5" 
                     placeholder="Enter product description"
-                    required><%= editing ? product.description : '' %></textarea>
+                    required><%= (editing || hasError) ? product.description : '' %></textarea>
             </div>
             <% if (editing) { %>
                 <input type="hidden" value="<%=product._id%>" name="productId">
