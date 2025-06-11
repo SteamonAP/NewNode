@@ -22,7 +22,7 @@ exports.postAddProduct = (req, res, next) => {
   if(!errors.isEmpty()){
     return res.status(402).render("admin/edit-product", {
       pageTitle: "Add Product",
-      path: "/admin/edit-product",
+      path: "/admin/add-product",
       editing: false,
       hasError:true,
       product: {
@@ -31,8 +31,8 @@ exports.postAddProduct = (req, res, next) => {
         price: price,
         description: description
       },
-      errorMessage: errors.array()[0].msg,
-      validationErrors : errors.array()
+      errorMessage: 'Database operation falied,Try again',
+      validationErrors : []
     });
 
   }
@@ -52,7 +52,24 @@ exports.postAddProduct = (req, res, next) => {
       res.redirect("/admin/products");
     })
     .catch((err) => {
-      console.log(err);
+      // return res.status(500).render("admin/edit-product", {
+      //   pageTitle: "Add Product",
+      //   path: "/admin/add-product",
+      //   editing: false,
+      //   hasError:true,
+      //   product: {
+      //     title: title,
+      //     imageUrl: imageUrl,
+      //     price: price,
+      //     description: description
+      //   },
+      //   errorMessage: errors.array()[0].msg,
+      //   validationErrors : errors.array()
+      // });
+      // res.redirect('/500');
+      const error = new Error('Creating prodect failed',err)
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -78,7 +95,9 @@ exports.getEditProduct = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error('Creating prodect failed',err)
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -123,7 +142,9 @@ exports.postEditProduct = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error('Creating prodect failed',err)
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -137,7 +158,9 @@ exports.getProducts = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error('Creating prodect failed',err)
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -148,6 +171,8 @@ exports.postDeleteProduct = (req, res, next) => {
       res.redirect("/admin/products");
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error('Creating prodect failed',err)
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };

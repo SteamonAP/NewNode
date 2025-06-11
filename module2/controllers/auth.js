@@ -6,8 +6,6 @@ const sendgridTransport = require("nodemailer-sendgrid-transport");
 const { validationResult } = require("express-validator");
 
 const dotenv = require("dotenv");
-const { buffer } = require("stream/consumers");
-const { validate } = require("../models/product");
 dotenv.config();
 // const isLoggedIn = req.get('Cookie').split(';')[1].trim().split('=')[1];
 
@@ -31,12 +29,10 @@ exports.getLogin = (req, res, next) => {
     pageTitle: "Login",
     errorMessage: message,
     oldInput: {
-      email: '',
-      password: ''
+      email: "",
+      password: "",
     },
-    validationErrors: []
-
-    
+    validationErrors: [],
   });
 };
 
@@ -49,11 +45,11 @@ exports.postLogin = (req, res, next) => {
       path: "/login",
       pageTitle: "Login",
       errorMessage: errors.array()[0].msg,
-      oldInput : {
+      oldInput: {
         email: email,
-        password: password
+        password: password,
       },
-      validationErrors : errors.array()
+      validationErrors: errors.array(),
     });
   }
   User.findOne({ email: email })
@@ -63,11 +59,11 @@ exports.postLogin = (req, res, next) => {
           path: "/login",
           pageTitle: "Login",
           errorMessage: "Invalid email or password",
-          oldInput : {
+          oldInput: {
             email: email,
-            password: password
+            password: password,
           },
-          validationErrors : []
+          validationErrors: [],
         });
       }
       bcrypt
@@ -85,11 +81,11 @@ exports.postLogin = (req, res, next) => {
             path: "/login",
             pageTitle: "Login",
             errorMessage: "Invalid email or password",
-            oldInput : {
+            oldInput: {
               email: email,
-              password: password
+              password: password,
             },
-            validationErrors : []
+            validationErrors: [],
           });
         })
         .catch((err) => {
@@ -97,7 +93,11 @@ exports.postLogin = (req, res, next) => {
           return res.redirect("/login");
         });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error("Creating prodect failed", err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 exports.getSignup = (req, res, next) => {
   let message = req.flash("error");
@@ -111,12 +111,11 @@ exports.getSignup = (req, res, next) => {
     pageTitle: "Signup",
     errorMessage: message,
     oldInput: {
-      email: '',
-      password: '',
-      confirmPassword: ''
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
-    validationErrors: []
-
+    validationErrors: [],
   });
 };
 exports.postSignup = (req, res, next) => {
@@ -134,7 +133,7 @@ exports.postSignup = (req, res, next) => {
         password: password,
         confirmPassword: req.body.confirmPassword,
       },
-      validationErrors: errors.array()
+      validationErrors: errors.array(),
     });
   }
   // User.findOne({ email: email })
@@ -190,7 +189,9 @@ exports.postSignup = (req, res, next) => {
       console.log(err);
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error("Creating prodect failed", err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 exports.postLogout = (req, res, next) => {
@@ -260,7 +261,9 @@ exports.postReset = (req, res, next) => {
         });
       })
       .catch((err) => {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
       });
   });
 };
@@ -284,7 +287,9 @@ exports.getNewPassword = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -342,6 +347,8 @@ exports.postNewPassword = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
-    });
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+      });
 };
