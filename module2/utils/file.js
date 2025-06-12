@@ -1,11 +1,10 @@
 const fs = require("fs");
+const path = require("path");
 
 const deleteFile = (filePath) =>{
-    fs.unlink(filePath, (err)=>{
-        if(err){
-            if(err && err.code !== 'ENOENT'){
-                console.log("Failed to delete File",err);
-            }
+    fs.unlink(path.join(__dirname,"..", "public", filePath), (err) => {
+        if(err && err.code !== 'ENOENT'){
+            console.log("File deletion failed:", err);
         }
     })
 }
