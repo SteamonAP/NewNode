@@ -4,14 +4,32 @@ const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
 
+const ITEMS_PER_PAGE = 1;
 
 exports.getProducts = (req, res, next) => {
+  const page = +req.query.page || 1;
+  let totalItems;
+
   Product.find()
+    .countDocuments()
+    .then(totalProducts => {
+      totalItems = totalProducts;
+      return Product.find()
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE)
+    })
     .then((products) => {
       res.render("shop/product-list", {
         prods: products,
         pageTitle: "All products",
         path: "/product",
+        currentPage: page,
+        hasNextPage: (ITEMS_PER_PAGE * page) < totalItems,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage : Math.ceil(totalItems / ITEMS_PER_PAGE)
+
       });
     })
     .catch((err) => {
@@ -38,12 +56,29 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
+  const page = +req.query.page || 1;
+  let totalItems;
+
   Product.find()
+    .countDocuments()
+    .then((numProducts) => {
+      totalItems = numProducts;
+      return Product.find()
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((products) => {
       res.render("shop/index", {
         prods: products,
         pageTitle: "Shop",
         path: "/",
+        totalProducts: totalItems,
+        currentPage: page,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
       });
     })
     .catch((err) => {
@@ -151,15 +186,16 @@ exports.getInvoice = (req, res, next) => {
   Order.findById(orderId)
     .then((order) => {
       if (!order) throw new Error("Order not found");
-      if (order.user.userId.toString() !== req.user._id.toString()) throw new Error("Unauthorized");
+      if (order.user.userId.toString() !== req.user._id.toString())
+        throw new Error("Unauthorized");
 
       const invoiceName = `invoice-${orderId}.pdf`;
       const invoicePath = path.join("data", "invoices", invoiceName);
 
       const pdfDoc = new PDFDocument({ margin: 50 });
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="${invoiceName}"`);
-      
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="${invoiceName}"`);
+
       pdfDoc.pipe(fs.createWriteStream(invoicePath));
       pdfDoc.pipe(res);
 
@@ -205,17 +241,23 @@ exports.getInvoice = (req, res, next) => {
 
       // TOTAL
       pdfDoc.moveDown();
-      pdfDoc.fontSize(16).text(`Total Amount: ₹${totalPrice.toFixed(2)}`, { align: "right" });
+      pdfDoc
+        .fontSize(16)
+        .text(`Total Amount: ₹${totalPrice.toFixed(2)}`, { align: "right" });
 
       // FOOTER
       pdfDoc.moveDown(2);
-      pdfDoc.fontSize(10).text("This is a computer-generated invoice and does not require a signature.", {
-        align: "center",
-        italics: true,
-      });
+      pdfDoc
+        .fontSize(10)
+        .text(
+          "This is a computer-generated invoice and does not require a signature.",
+          {
+            align: "center",
+            italics: true,
+          }
+        );
 
       pdfDoc.end();
     })
     .catch((err) => next(err));
 };
-
