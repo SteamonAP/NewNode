@@ -10,7 +10,7 @@
         <% if(errorMessage) { %>
             <div class="user-message user-message--error"><%= errorMessage %></div>
         <% } %>
-        <form class="product-form" action="/admin/<% if(editing) { %>edit-product<% } else { %>add-product<% } %>" method="POST" novalidate>
+        <form class="product-form" action="/admin/<% if(editing) { %>edit-product<% } else { %>add-product<% } %>" method="POST" novalidate enctype="multipart/form-data">
             <!-- Hidden field for product ID (if editing) -->
             <% if (editing) { %>
                 <input type="hidden" name="id" value="<%= product.id %>">
@@ -30,7 +30,7 @@
             </div>
 
             <!-- Image URL Field -->
-            <div class="form-control">
+            <!-- <div class="form-control">
                 <label for="imageUrl">Image URL</label>
                 <input
                     class="<%= validationErrors.find(e => e.param === 'imageUrl') ? 'invalid' : '' %>"
@@ -39,6 +39,14 @@
                     id="imageUrl" 
                     placeholder="https://example.com/image.jpg"
                     value="<%= (editing || hasError) ? product.imageUrl : '' %>" 
+                    required>
+            </div> -->
+            <div class="form-control">
+                <label for="image">Image</label>
+                <input
+                    type="file" 
+                    name="image" 
+                    id="image" 
                     required>
             </div>
 
