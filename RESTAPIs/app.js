@@ -1,4 +1,6 @@
 const path = require("path");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const express = require("express");
 const app = express();
@@ -8,6 +10,7 @@ const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
 
 const feedRoutes = require("./routes/feed.js");
+const authRoutes = require("./routes/auth.js");
 
 app.use(bodyParser.json());
 app.use(express.json());
@@ -31,7 +34,7 @@ const fileFilter = (req, file, cb) => {
   ) {
     cb(null, true);
   } else {
-    cb(nul, false);
+    cb(null, false);
   }
 };
 app.use(
@@ -40,22 +43,26 @@ app.use(
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST,PUT,DELETE,PATCH");
+  res.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET, POST, PUT , DELETE , PATCH");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
+
+
 app.use("/feed", feedRoutes);
+app.use("/auth", authRoutes);
+
+
 app.use((error, req, res, next) => {
   console.log(error);
   const status = error.statusCode || 500;
   const message = error.message;
-  res.status(status).json({ message: message });
+  const data = error.data;
+  res.status(status).json({ message: message, data: data });
 });
 
 mongoose
-  .connect(
-    "mongodb+srv://amoghpitale7:Steamonap%40123@cluster0.qhwtc5h.mongodb.net/messages?retryWrites=true&w=majority&appName=Cluster0"
-  )
+  .connect(process.env.MONGO_URI)
   .then((res) => {
     app.listen(8080);
     console.log("Connected to MongoDB");
