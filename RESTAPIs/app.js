@@ -9,6 +9,13 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
 
+const cors = require('cors');
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'PATCH' ,'DELETE'],
+  credentials: true
+}));
+
 const feedRoutes = require("./routes/feed.js");
 const authRoutes = require("./routes/auth.js");
 
@@ -41,13 +48,6 @@ app.use(
   multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
 );
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET, POST, PUT , DELETE , PATCH");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
-
 
 app.use("/feed", feedRoutes);
 app.use("/auth", authRoutes);
@@ -64,7 +64,11 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(process.env.MONGO_URI)
   .then((res) => {
-    app.listen(8080);
+    const server = app.listen(8080);
+    const io = require('./socket').init(server);
+    io.on('connection', socket => {
+      console.log('Client Connected');
+    }); 
     console.log("Connected to MongoDB");
   })
   .catch((err) => {
