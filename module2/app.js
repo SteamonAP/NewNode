@@ -8,8 +8,12 @@ const csrf = require("csurf");
 const flash = require("connect-flash");
 const multer = require("multer");
 const crypto = require("crypto");
+const helmet = require("helmet");
+const compression = require("compression");
+const morgan = require("morgan");
 
 const path = require("path");
+const fs = require("fs");
 const app = express();
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -36,7 +40,7 @@ const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === "image/png" ||
     file.mimetype === "image/jpg" ||
-    file.mimetype === "image/jpeg"||
+    file.mimetype === "image/jpeg" ||
     file.mimetype === "image/webp"
   ) {
     cb(null, true);
@@ -54,6 +58,15 @@ const User = require("./models/user.js");
 app.set("view engine", "ejs");
 app.set("views", "views");
 
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, "access.log"),
+  { flags: "a" }
+);
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan("combined", { stream: accessLogStream }));
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(
   multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
@@ -61,7 +74,7 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
-    secret: "mysecret",
+    secret: process.env.SECRET_KEY,
     resave: false,
     saveUninitialized: false,
     store: store,
@@ -103,8 +116,13 @@ app.use(errorContollers.get404);
 
 app.use((error, req, res, next) => {
   // res.redirect('/500');
-  res.status(404).render("500", { pageTitle: "Erro !", path: "/500" });
-  isAuthenticated: req.session.isLoggedIn;
+  res
+    .status(500)
+    .render("500", {
+      pageTitle: "Erro !",
+      path: "/500",
+      isAuthenticated: req.session.isLoggedIn,
+    });
 });
 
 connectDB().then(() => {
