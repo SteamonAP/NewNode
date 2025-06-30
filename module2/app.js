@@ -14,6 +14,7 @@ const morgan = require("morgan");
 
 const path = require("path");
 const fs = require("fs");
+const https = require("https");
 const app = express();
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,10 @@ const store = new MongoDBStore({
 });
 
 const csrfProtection = csrf();
+
+const privateKey = fs.readFileSync("server.key");
+const certificate = fs.readFileSync("server.cert");
+
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "./public/images/uploads");
@@ -116,17 +121,17 @@ app.use(errorContollers.get404);
 
 app.use((error, req, res, next) => {
   // res.redirect('/500');
-  res
-    .status(500)
-    .render("500", {
-      pageTitle: "Erro !",
-      path: "/500",
-      isAuthenticated: req.session.isLoggedIn,
-    });
+  res.status(500).render("500", {
+    pageTitle: "Erro !",
+    path: "/500",
+    isAuthenticated: req.session.isLoggedIn,
+  });
 });
 
 connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+  // https
+  //   .createServer({ key: privateKey, cert: certificate }, app)
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
 });
